@@ -17,6 +17,7 @@ final class GitHubService: GitHubServiceProtocol {
     self.apiClient = apiClient
     self.baseURL = baseURL
     self.decoder = JSONDecoder()
+    self.decoder.dateDecodingStrategy = .iso8601
   }
 
   func searchRepositories(query: String, page: Int) async throws -> SearchRepositoriesResult {
@@ -61,5 +62,38 @@ final class GitHubService: GitHubServiceProtocol {
     } catch {
       throw GitHubServiceError.decodingFailed
     }
+  }
+
+  func fetchReadme(owner: String, repo: String) async throws -> String {
+    let url =
+      baseURL
+      .appendingPathComponent("repos")
+      .appendingPathComponent(owner)
+      .appendingPathComponent(repo)
+      .appendingPathComponent("readme")
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    request.setValue("application/vnd.github.raw+json", forHTTPHeaderField: "Accept")
+
+    let (data, response) = try await apiClient.data(for: request)
+
+    guard let httpResponse = response as? HTTPURLResponse else {
+      throw GitHubServiceError.invalidResponse
+    }
+
+    switch httpResponse.statusCode {
+    case 200:
+      break
+    case 403:
+      throw GitHubServiceError.rateLimitExceeded
+    default:
+      throw GitHubServiceError.invalidResponse
+    }
+
+    guard let markdown = String(data: data, encoding: .utf8) else {
+      throw GitHubServiceError.decodingFailed
+    }
+    return markdown
   }
 }

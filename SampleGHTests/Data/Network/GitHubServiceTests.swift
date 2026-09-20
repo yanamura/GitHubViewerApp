@@ -38,7 +38,11 @@ struct GitHubServiceTests {
                   "language": "Swift",
                   "stargazers_count": 100,
                   "forks_count": 10,
-                  "html_url": "https://github.com/owner/Repo"
+                  "open_issues_count": 3,
+                  "html_url": "https://github.com/owner/Repo",
+                  "created_at": "2020-01-01T00:00:00Z",
+                  "updated_at": "2020-06-01T00:00:00Z",
+                  "license": null
               }
           ]
       }
@@ -81,6 +85,35 @@ struct GitHubServiceTests {
 
     await #expect(throws: GitHubServiceError.decodingFailed) {
       try await sut.searchRepositories(query: "swift", page: 1)
+    }
+  }
+
+  @Test func fetchReadmeReturnsRawMarkdownOnSuccess() async throws {
+    let markdown = "# Title\n\nBody text."
+    let apiClient = MockAPIClient(
+      result: .success((markdown.data(using: .utf8)!, Self.response(statusCode: 200))))
+    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+
+    let result = try await sut.fetchReadme(owner: "owner", repo: "Repo")
+
+    #expect(result == markdown)
+  }
+
+  @Test func fetchReadmeThrowsRateLimitExceededOn403() async throws {
+    let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 403))))
+    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+
+    await #expect(throws: GitHubServiceError.rateLimitExceeded) {
+      try await sut.fetchReadme(owner: "owner", repo: "Repo")
+    }
+  }
+
+  @Test func fetchReadmeThrowsInvalidResponseOnUnexpectedStatusCode() async throws {
+    let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 404))))
+    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+
+    await #expect(throws: GitHubServiceError.invalidResponse) {
+      try await sut.fetchReadme(owner: "owner", repo: "Repo")
     }
   }
 }

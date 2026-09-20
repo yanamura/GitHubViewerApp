@@ -20,8 +20,7 @@ struct SearchView: View {
           await viewModel.onQueryChanged()
         }
         .navigationDestination(for: Repository.self) { repository in
-          // TODO: リポジトリ詳細画面(Presentation/Detail)実装後に置き換える
-          Text(repository.fullName)
+          DetailView(repository: repository)
         }
     }
   }

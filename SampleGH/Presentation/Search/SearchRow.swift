@@ -50,7 +50,11 @@ struct SearchRow: View {
       language: "Swift",
       stargazersCount: 12345,
       forksCount: 678,
-      htmlURL: nil
+      openIssuesCount: 42,
+      htmlURL: nil,
+      createdAt: Date(timeIntervalSince1970: 0),
+      updatedAt: Date(),
+      license: nil
     )
   )
 }
