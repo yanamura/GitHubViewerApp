@@ -8,6 +8,7 @@ import Testing
 
 @testable import SampleGH
 
+@MainActor
 struct LocalFavoritesDataSourceTests {
   private static func makeRepository(id: Int) -> Repository {
     Repository(

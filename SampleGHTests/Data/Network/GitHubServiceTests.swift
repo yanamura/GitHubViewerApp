@@ -8,6 +8,7 @@ import Testing
 
 @testable import SampleGH
 
+@MainActor
 struct GitHubServiceTests {
   private struct MockAPIClient: APIClientProtocol {
     let result: Result<(Data, URLResponse), Error>

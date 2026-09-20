@@ -6,7 +6,7 @@
 import Foundation
 
 actor LocalFavoritesDataSource: FavoritesStorageProtocol {
-  private let defaults: UserDefaults
+  private nonisolated(unsafe) let defaults: UserDefaults
   private let storageKey = "com.samplegh.favorites"
 
   init(defaults: UserDefaults = .standard) {
