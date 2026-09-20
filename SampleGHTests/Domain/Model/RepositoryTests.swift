@@ -8,6 +8,7 @@ import Testing
 
 @testable import SampleGH
 
+@MainActor
 struct RepositoryTests {
   @Test func decodingMapsSnakeCaseFieldsFromJSON() throws {
     let json = """

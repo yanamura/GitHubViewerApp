@@ -8,6 +8,7 @@ import Testing
 
 @testable import SampleGH
 
+@MainActor
 struct SearchRepositoriesResultTests {
   @Test func decodingMapsTotalsAndItemsFromJSON() throws {
     let json = """
