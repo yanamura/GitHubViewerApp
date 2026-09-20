@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct Owner: Identifiable, Equatable, Sendable, Decodable {
+struct Owner: Identifiable, Hashable, Sendable, Decodable {
   let id: Int
   let login: String
   let avatarURL: URL?

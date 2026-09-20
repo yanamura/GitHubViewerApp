@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct Repository: Identifiable, Equatable, Sendable, Decodable {
+struct Repository: Identifiable, Hashable, Sendable, Decodable {
   let id: Int
   let name: String
   let fullName: String
