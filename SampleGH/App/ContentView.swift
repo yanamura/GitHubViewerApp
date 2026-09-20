@@ -9,7 +9,14 @@ import SwiftUI
 
 struct ContentView: View {
   var body: some View {
-    SearchView()
+    TabView {
+      Tab("Search", systemImage: "magnifyingglass") {
+        SearchView()
+      }
+      Tab("Favorites", systemImage: "star") {
+        FavoritesView()
+      }
+    }
   }
 }
 
