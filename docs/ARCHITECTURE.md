@@ -16,7 +16,7 @@ SampleGH/
 │   ├── Model/          # Entity (Repository, Owner など)
 │   └── Interface/      # プロトコル定義 (GitHubServiceProtocol, StorageProtocol など)
 ├── Data/               # データアクセス・外部連携の実装
-│   ├── Network/        # URLSession, APIClient, DTO
+│   ├── Network/        # URLSession, APIClient
 │   └── Storage/        # KeychainManager, LocalFavoritesDataSource
 └── Presentation/       # UI層 (SwiftUI, ViewModel)
     ├── Common/         # 画面横断で利用する共通UI部品 (AsyncAvatarView, ErrorView など)
@@ -33,3 +33,12 @@ SampleGHTests/
 ├── Data/               
 │   ├── Network/        
 │   └── Storage/ 
+```
+
+---
+
+## 3. データマッピング方針 (Data Mapping Policy)
+
+- APIレスポンス用のDTOは作らない。`Domain/Model` のEntity（`Repository`, `Owner` など）が直接 `Decodable` に準拠し、`CodingKeys` でAPIのsnake_caseキーをマッピングする。
+- 理由: DTOとEntityのフィールドがほぼ同一になるケースが多く、DTO→Entityの変換コードは重複・保守コストになるだけで得られる価値が小さいため。
+- Entityのプロパティ名や型がAPIレスポンスと大きく異なる、または複数の外部APIから同一Entityを組み立てる必要が生じた場合は、その時点でDTOの導入を検討する。
