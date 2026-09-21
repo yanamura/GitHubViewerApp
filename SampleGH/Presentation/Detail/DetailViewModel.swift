@@ -10,7 +10,7 @@ import Foundation
 final class DetailViewModel {
   enum ReadmeState: Equatable {
     case loading
-    case loaded(String)
+    case loaded([ReadmeBlock])
     case error(String)
   }
 
@@ -54,7 +54,7 @@ final class DetailViewModel {
     do {
       let markdown = try await gitHubService.fetchReadme(
         owner: repository.owner.login, repo: repository.name)
-      readmeState = .loaded(markdown)
+      readmeState = .loaded(ReadmeBlock.parse(markdown))
     } catch {
       readmeState = .error("READMEを取得できませんでした。")
     }

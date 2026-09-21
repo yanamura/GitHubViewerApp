@@ -11,8 +11,8 @@ struct ExploreView: View {
   var body: some View {
     NavigationStack {
       VStack(spacing: 0) {
-        languagePicker
-        content
+        ExploreLanguagePicker(viewModel: viewModel)
+        ExploreContent(viewModel: viewModel)
       }
       .navigationTitle("Explore")
       .task(id: viewModel.languageFilter) {
@@ -23,8 +23,12 @@ struct ExploreView: View {
       }
     }
   }
+}
 
-  private var languagePicker: some View {
+private struct ExploreLanguagePicker: View {
+  @Bindable var viewModel: ExploreViewModel
+
+  var body: some View {
     Picker("言語", selection: $viewModel.languageFilter) {
       ForEach(ExploreLanguageFilter.allCases) { filter in
         Text(filter.rawValue).tag(filter)
@@ -34,9 +38,12 @@ struct ExploreView: View {
     .padding(.horizontal)
     .padding(.top, 8)
   }
+}
 
-  @ViewBuilder
-  private var content: some View {
+private struct ExploreContent: View {
+  let viewModel: ExploreViewModel
+
+  var body: some View {
     switch viewModel.phase {
     case .loading:
       ProgressView()
@@ -47,7 +54,7 @@ struct ExploreView: View {
           "リポジトリが見つかりません", systemImage: "magnifyingglass",
           description: Text("条件を変更して再度お試しください。"))
       } else {
-        resultList
+        ExploreResultList(viewModel: viewModel)
       }
     case .error(let message):
       ErrorView(message: message) {
@@ -55,8 +62,12 @@ struct ExploreView: View {
       }
     }
   }
+}
 
-  private var resultList: some View {
+private struct ExploreResultList: View {
+  let viewModel: ExploreViewModel
+
+  var body: some View {
     List(viewModel.repositories) { repository in
       NavigationLink(value: repository) {
         SearchRow(repository: repository)

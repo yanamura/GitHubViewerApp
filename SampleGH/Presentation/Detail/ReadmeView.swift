@@ -6,19 +6,22 @@
 import SwiftUI
 
 struct ReadmeView: View {
-  let markdown: String
+  let blocks: [ReadmeBlock]
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
-      ForEach(Array(Self.parse(markdown).enumerated()), id: \.offset) { _, block in
-        blockView(for: block)
+      ForEach(blocks) { block in
+        ReadmeBlockView(kind: block.kind)
       }
     }
   }
+}
 
-  @ViewBuilder
-  private func blockView(for block: Block) -> some View {
-    switch block {
+private struct ReadmeBlockView: View {
+  let kind: ReadmeBlock.Kind
+
+  var body: some View {
+    switch kind {
     case .heading(let level, let text):
       Text(Self.attributedText(text))
         .font(Self.font(forHeadingLevel: level))
@@ -36,12 +39,6 @@ struct ReadmeView: View {
     }
   }
 
-  private enum Block {
-    case heading(level: Int, text: String)
-    case codeBlock(String)
-    case paragraph(String)
-  }
-
   private static func font(forHeadingLevel level: Int) -> Font {
     switch level {
     case 1: return .title
@@ -56,69 +53,13 @@ struct ReadmeView: View {
       interpretedSyntax: .inlineOnlyPreservingWhitespace)
     return (try? AttributedString(markdown: text, options: options)) ?? AttributedString(text)
   }
-
-  private static func parse(_ markdown: String) -> [Block] {
-    var blocks: [Block] = []
-    var paragraphLines: [String] = []
-    var codeLines: [String]?
-
-    func flushParagraph() {
-      guard !paragraphLines.isEmpty else { return }
-      let text = paragraphLines.joined(separator: " ").trimmingCharacters(in: .whitespaces)
-      if !text.isEmpty {
-        blocks.append(.paragraph(text))
-      }
-      paragraphLines.removeAll()
-    }
-
-    for rawLine in markdown.components(separatedBy: "\n") {
-      let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
-
-      if line.hasPrefix("```") {
-        if let lines = codeLines {
-          blocks.append(.codeBlock(lines.joined(separator: "\n")))
-          codeLines = nil
-        } else {
-          flushParagraph()
-          codeLines = []
-        }
-        continue
-      }
-
-      if codeLines != nil {
-        codeLines?.append(rawLine)
-        continue
-      }
-
-      if line.isEmpty {
-        flushParagraph()
-        continue
-      }
-
-      let headingLevel = line.prefix(while: { $0 == "#" }).count
-      if headingLevel > 0, headingLevel <= 6, line.count > headingLevel,
-        line[line.index(line.startIndex, offsetBy: headingLevel)] == " "
-      {
-        flushParagraph()
-        let text = line.dropFirst(headingLevel).trimmingCharacters(in: .whitespaces)
-        blocks.append(.heading(level: headingLevel, text: text))
-        continue
-      }
-
-      paragraphLines.append(line)
-    }
-    flushParagraph()
-    if let lines = codeLines, !lines.isEmpty {
-      blocks.append(.codeBlock(lines.joined(separator: "\n")))
-    }
-    return blocks
-  }
 }
 
 #Preview {
   ScrollView {
     ReadmeView(
-      markdown: """
+      blocks: ReadmeBlock.parse(
+        """
         # Sample Repository
 
         This is a **sample** readme with _inline_ styling.
@@ -128,7 +69,7 @@ struct ReadmeView: View {
         ```
         let value = 1
         ```
-        """
+        """)
     )
     .padding()
   }

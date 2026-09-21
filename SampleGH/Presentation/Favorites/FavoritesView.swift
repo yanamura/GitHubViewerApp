@@ -11,7 +11,7 @@ struct FavoritesView: View {
 
   var body: some View {
     NavigationStack(path: $path) {
-      content
+      FavoritesContent(viewModel: viewModel)
         .navigationTitle("Favorites")
         .navigationDestination(for: Repository.self) { repository in
           DetailView(repository: repository)
@@ -25,9 +25,12 @@ struct FavoritesView: View {
       Task { await viewModel.onAppear() }
     }
   }
+}
 
-  @ViewBuilder
-  private var content: some View {
+private struct FavoritesContent: View {
+  let viewModel: FavoritesViewModel
+
+  var body: some View {
     if viewModel.repositories.isEmpty {
       ContentUnavailableView(
         "お気に入りはありません", systemImage: "star",

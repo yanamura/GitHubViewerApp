@@ -13,16 +13,28 @@ struct DetailView: View {
   }
 
   var body: some View {
+    let repository = viewModel.repository
     ScrollView {
       VStack(alignment: .leading, spacing: 20) {
-        header
-        metrics
+        DetailHeader(
+          owner: repository.owner,
+          fullName: repository.fullName,
+          description: repository.description,
+          createdAt: repository.createdAt,
+          updatedAt: repository.updatedAt
+        )
+        DetailMetrics(
+          stargazersCount: repository.stargazersCount,
+          forksCount: repository.forksCount,
+          openIssuesCount: repository.openIssuesCount,
+          licenseName: repository.license?.name
+        )
         Divider()
-        readmeSection
+        ReadmeSection(viewModel: viewModel)
       }
       .padding()
     }
-    .navigationTitle(viewModel.repository.name)
+    .navigationTitle(repository.name)
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {
       ToolbarItem(placement: .primaryAction) {
@@ -38,44 +50,65 @@ struct DetailView: View {
       await viewModel.onAppear()
     }
   }
+}
 
-  private var header: some View {
+private struct DetailHeader: View {
+  let owner: Owner
+  let fullName: String
+  let description: String?
+  let createdAt: Date
+  let updatedAt: Date
+
+  var body: some View {
     HStack(alignment: .top, spacing: 12) {
-      ProfileAvatarButton(owner: viewModel.repository.owner, size: 56)
+      ProfileAvatarButton(owner: owner, size: 56)
 
       VStack(alignment: .leading, spacing: 4) {
-        Text(viewModel.repository.fullName)
+        Text(fullName)
           .font(.title2.bold())
 
-        if let description = viewModel.repository.description {
+        if let description {
           Text(description)
             .font(.subheadline)
             .foregroundStyle(.secondary)
         }
 
-        Text("作成日: \(viewModel.repository.createdAt.formatted(date: .abbreviated, time: .omitted))")
+        Text("作成日: \(createdAt, format: Self.dateStyle)")
           .font(.caption)
           .foregroundStyle(.secondary)
-        Text("更新日: \(viewModel.repository.updatedAt.formatted(date: .abbreviated, time: .omitted))")
+        Text("更新日: \(updatedAt, format: Self.dateStyle)")
           .font(.caption)
           .foregroundStyle(.secondary)
       }
     }
   }
 
-  private var metrics: some View {
+  private static let dateStyle = Date.FormatStyle(date: .abbreviated, time: .omitted)
+}
+
+private struct DetailMetrics: View {
+  let stargazersCount: Int
+  let forksCount: Int
+  let openIssuesCount: Int
+  let licenseName: String?
+
+  var body: some View {
     HStack(spacing: 0) {
-      metric(value: "\(viewModel.repository.stargazersCount)", label: "Stars", systemImage: "star")
-      metric(value: "\(viewModel.repository.forksCount)", label: "Forks", systemImage: "tuningfork")
-      metric(
-        value: "\(viewModel.repository.openIssuesCount)", label: "Issues",
-        systemImage: "exclamationmark.circle")
-      metric(
-        value: viewModel.repository.license?.name ?? "-", label: "License", systemImage: "doc.text")
+      MetricItem(value: "\(stargazersCount)", label: "Stars", systemImage: "star")
+      MetricItem(value: "\(forksCount)", label: "Forks", systemImage: "tuningfork")
+      MetricItem(
+        value: "\(openIssuesCount)", label: "Issues", systemImage: "exclamationmark.circle")
+      MetricItem(value: licenseName ?? "-", label: "License", systemImage: "doc.text")
     }
   }
+}
 
-  private func metric(value: String, label: String, systemImage: String) -> some View {
+private struct MetricItem: View {
+  let value: String
+  let label: LocalizedStringKey
+  let systemImage: String
+
+  var body: some View {
     VStack(spacing: 4) {
       Label(value, systemImage: systemImage)
         .font(.subheadline.bold())
@@ -87,16 +120,19 @@ struct DetailView: View {
     }
     .frame(maxWidth: .infinity)
   }
+}
 
-  @ViewBuilder
-  private var readmeSection: some View {
+private struct ReadmeSection: View {
+  let viewModel: DetailViewModel
+
+  var body: some View {
     switch viewModel.readmeState {
     case .loading:
       ProgressView()
         .frame(maxWidth: .infinity)
         .padding(.top, 32)
-    case .loaded(let markdown):
-      ReadmeView(markdown: markdown)
+    case .loaded(let blocks):
+      ReadmeView(blocks: blocks)
     case .error(let message):
       ErrorView(message: message) {
         Task { await viewModel.retryReadme() }

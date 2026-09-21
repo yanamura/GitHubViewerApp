@@ -10,7 +10,7 @@ struct SearchView: View {
 
   var body: some View {
     NavigationStack {
-      content
+      SearchContent(viewModel: viewModel)
         .navigationTitle("Search")
         .searchable(text: $viewModel.query, prompt: "Search repositories")
         .onSubmit(of: .search) {
@@ -24,9 +24,12 @@ struct SearchView: View {
         }
     }
   }
+}
 
-  @ViewBuilder
-  private var content: some View {
+private struct SearchContent: View {
+  let viewModel: SearchViewModel
+
+  var body: some View {
     switch viewModel.phase {
     case .idle:
       ContentUnavailableView.search
@@ -37,7 +40,7 @@ struct SearchView: View {
       if viewModel.repositories.isEmpty {
         ContentUnavailableView.search(text: viewModel.query)
       } else {
-        resultList
+        SearchResultList(viewModel: viewModel)
       }
     case .error(let message):
       ErrorView(message: message) {
@@ -45,8 +48,12 @@ struct SearchView: View {
       }
     }
   }
+}
 
-  private var resultList: some View {
+private struct SearchResultList: View {
+  let viewModel: SearchViewModel
+
+  var body: some View {
     List(viewModel.repositories) { repository in
       NavigationLink(value: repository) {
         SearchRow(repository: repository)

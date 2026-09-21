@@ -38,7 +38,7 @@ struct SettingsView: View {
         } header: {
           Text("Personal Access Token")
         } footer: {
-          footer
+          TokenFooter(status: viewModel.status)
         }
       }
       .navigationTitle("Settings")
@@ -47,12 +47,15 @@ struct SettingsView: View {
       }
     }
   }
+}
 
-  @ViewBuilder
-  private var footer: some View {
+private struct TokenFooter: View {
+  let status: SettingsViewModel.Status?
+
+  var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       Text("トークンを登録するとGitHub APIのレート制限が緩和されます。トークンは端末のKeychainに保存されます。")
-      switch viewModel.status {
+      switch status {
       case .success(let message):
         Label(message, systemImage: "checkmark.circle")
           .foregroundStyle(.green)

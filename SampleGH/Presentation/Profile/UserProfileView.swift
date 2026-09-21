@@ -17,7 +17,7 @@ struct UserProfileView: View {
       VStack(spacing: 16) {
         // アバターは Owner から即時に出せるので、ローディング中もレイアウトが変わらない。
         AsyncAvatarView(url: viewModel.owner.avatarURL, size: 96)
-        content
+        UserProfileContent(viewModel: viewModel)
       }
       .frame(maxWidth: .infinity)
       .padding(.top, 32)
@@ -29,26 +29,31 @@ struct UserProfileView: View {
       await viewModel.onAppear()
     }
   }
+}
 
-  @ViewBuilder
-  private var content: some View {
-    switch viewModel.state {
-    case .loading:
-      Text("@\(viewModel.owner.login)")
-        .foregroundStyle(.secondary)
-      ProgressView()
-    case .loaded(let profile):
-      Text(profile.displayName)
-        .font(.title2.bold())
-      Text("@\(profile.login)")
-        .foregroundStyle(.secondary)
-      if let bio = profile.displayBio {
-        Text(bio)
-          .multilineTextAlignment(.center)
-      }
-    case .error(let message):
-      ErrorView(message: message) {
-        Task { await viewModel.retry() }
+private struct UserProfileContent: View {
+  let viewModel: UserProfileViewModel
+
+  var body: some View {
+    VStack(spacing: 16) {
+      switch viewModel.state {
+      case .loading:
+        Text(verbatim: "@\(viewModel.owner.login)")
+          .foregroundStyle(.secondary)
+        ProgressView()
+      case .loaded(let profile):
+        Text(profile.displayName)
+          .font(.title2.bold())
+        Text(verbatim: "@\(profile.login)")
+          .foregroundStyle(.secondary)
+        if let bio = profile.displayBio {
+          Text(bio)
+            .multilineTextAlignment(.center)
+        }
+      case .error(let message):
+        ErrorView(message: message) {
+          Task { await viewModel.retry() }
+        }
       }
     }
   }
