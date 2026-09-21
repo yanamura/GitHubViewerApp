@@ -39,22 +39,8 @@ struct SearchRow: View {
   }
 }
 
-#Preview {
-  SearchRow(
-    repository: Repository(
-      id: 1,
-      name: "swift",
-      fullName: "apple/swift",
-      owner: Owner(id: 1, login: "apple", avatarURL: nil),
-      description: "The Swift Programming Language",
-      language: "Swift",
-      stargazersCount: 12345,
-      forksCount: 678,
-      openIssuesCount: 42,
-      htmlURL: nil,
-      createdAt: Date(timeIntervalSince1970: 0),
-      updatedAt: Date(),
-      license: nil
-    )
-  )
-}
+#if DEBUG
+  #Preview {
+    SearchRow(repository: .preview)
+  }
+#endif

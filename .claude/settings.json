@@ -17,6 +17,7 @@
     "commit-commands@claude-code-plugins": true,
     "pr-review-toolkit@claude-code-plugins": true,
     "security-guidance@claude-code-plugins": true,
-    "feature-dev@claude-code-plugins": true
+    "feature-dev@claude-code-plugins": true,
+    "swiftui-expert@swiftui-expert-skill": true
   }
 }

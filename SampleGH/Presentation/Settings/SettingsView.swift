@@ -6,7 +6,15 @@
 import SwiftUI
 
 struct SettingsView: View {
-  @State private var viewModel = SettingsViewModel()
+  @State private var viewModel: SettingsViewModel
+
+  init(
+    tokenStorage: TokenStorageProtocol = KeychainManager(),
+    gitHubService: GitHubServiceProtocol = GitHubService()
+  ) {
+    _viewModel = State(
+      wrappedValue: SettingsViewModel(tokenStorage: tokenStorage, gitHubService: gitHubService))
+  }
 
   var body: some View {
     NavigationStack {
@@ -66,6 +74,14 @@ struct SettingsView: View {
   }
 }
 
-#Preview {
-  SettingsView()
-}
+#if DEBUG
+  #Preview("No Token") {
+    SettingsView(tokenStorage: PreviewTokenStorage(), gitHubService: PreviewGitHubService())
+  }
+
+  #Preview("Saved Token") {
+    SettingsView(
+      tokenStorage: PreviewTokenStorage(token: "ghp_preview"),
+      gitHubService: PreviewGitHubService())
+  }
+#endif

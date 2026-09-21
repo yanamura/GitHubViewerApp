@@ -6,8 +6,12 @@
 import SwiftUI
 
 struct FavoritesView: View {
-  @State private var viewModel = FavoritesViewModel()
+  @State private var viewModel: FavoritesViewModel
   @State private var path = NavigationPath()
+
+  init(favoritesStorage: FavoritesStorageProtocol = LocalFavoritesDataSource()) {
+    _viewModel = State(wrappedValue: FavoritesViewModel(favoritesStorage: favoritesStorage))
+  }
 
   var body: some View {
     NavigationStack(path: $path) {
@@ -50,6 +54,12 @@ struct FavoritesView: View {
   }
 }
 
-#Preview {
-  FavoritesView()
-}
+#if DEBUG
+  #Preview("With Favorites") {
+    FavoritesView(favoritesStorage: PreviewFavoritesStorage(repositories: Repository.previews))
+  }
+
+  #Preview("Empty") {
+    FavoritesView(favoritesStorage: PreviewFavoritesStorage())
+  }
+#endif

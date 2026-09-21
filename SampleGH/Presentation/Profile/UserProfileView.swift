@@ -8,8 +8,9 @@ import SwiftUI
 struct UserProfileView: View {
   @State private var viewModel: UserProfileViewModel
 
-  init(owner: Owner) {
-    _viewModel = State(wrappedValue: UserProfileViewModel(owner: owner))
+  init(owner: Owner, gitHubService: GitHubServiceProtocol = GitHubService()) {
+    _viewModel = State(
+      wrappedValue: UserProfileViewModel(owner: owner, gitHubService: gitHubService))
   }
 
   var body: some View {
@@ -54,6 +55,12 @@ struct UserProfileView: View {
   }
 }
 
-#Preview {
-  UserProfileView(owner: Owner(id: 1, login: "apple", avatarURL: nil))
-}
+#if DEBUG
+  #Preview("Loaded") {
+    UserProfileView(owner: .preview, gitHubService: PreviewGitHubService())
+  }
+
+  #Preview("Error") {
+    UserProfileView(owner: .preview, gitHubService: PreviewGitHubService(error: .invalidResponse))
+  }
+#endif

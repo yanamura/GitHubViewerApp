@@ -28,6 +28,8 @@ struct ProfileAvatarButton: View {
   }
 }
 
-#Preview {
-  ProfileAvatarButton(owner: Owner(id: 1, login: "apple", avatarURL: nil))
-}
+#if DEBUG
+  #Preview {
+    ProfileAvatarButton(owner: .preview)
+  }
+#endif

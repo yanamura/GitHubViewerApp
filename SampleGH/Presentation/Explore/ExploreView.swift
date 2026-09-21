@@ -6,7 +6,11 @@
 import SwiftUI
 
 struct ExploreView: View {
-  @State private var viewModel = ExploreViewModel()
+  @State private var viewModel: ExploreViewModel
+
+  init(gitHubService: GitHubServiceProtocol = GitHubService()) {
+    _viewModel = State(wrappedValue: ExploreViewModel(gitHubService: gitHubService))
+  }
 
   var body: some View {
     NavigationStack {
@@ -69,6 +73,16 @@ struct ExploreView: View {
   }
 }
 
-#Preview {
-  ExploreView()
-}
+#if DEBUG
+  #Preview("Loaded") {
+    ExploreView(gitHubService: PreviewGitHubService())
+  }
+
+  #Preview("Empty") {
+    ExploreView(gitHubService: PreviewGitHubService(repositories: []))
+  }
+
+  #Preview("Error") {
+    ExploreView(gitHubService: PreviewGitHubService(error: .invalidResponse))
+  }
+#endif

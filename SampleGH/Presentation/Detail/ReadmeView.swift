@@ -6,18 +6,23 @@
 import SwiftUI
 
 struct ReadmeView: View {
-  let markdown: String
+  private let blocks: [Block]
+
+  /// パースは `body` の評価ごとではなく、初期化時に一度だけ行う。
+  init(markdown: String) {
+    blocks = Self.parse(markdown)
+  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
-      ForEach(Array(Self.parse(markdown).enumerated()), id: \.offset) { _, block in
-        blockView(for: block)
+      ForEach(blocks) { block in
+        blockView(for: block.content)
       }
     }
   }
 
   @ViewBuilder
-  private func blockView(for block: Block) -> some View {
+  private func blockView(for block: Block.Content) -> some View {
     switch block {
     case .heading(let level, let text):
       Text(Self.attributedText(text))
@@ -36,10 +41,16 @@ struct ReadmeView: View {
     }
   }
 
-  private enum Block {
-    case heading(level: Int, text: String)
-    case codeBlock(String)
-    case paragraph(String)
+  private struct Block: Identifiable {
+    enum Content {
+      case heading(level: Int, text: String)
+      case codeBlock(String)
+      case paragraph(String)
+    }
+
+    /// パース時に一度だけ採番する。ブロックは入力の `markdown` から作り直されるまで不変。
+    let id: Int
+    let content: Content
   }
 
   private static func font(forHeadingLevel level: Int) -> Font {
@@ -58,7 +69,7 @@ struct ReadmeView: View {
   }
 
   private static func parse(_ markdown: String) -> [Block] {
-    var blocks: [Block] = []
+    var contents: [Block.Content] = []
     var paragraphLines: [String] = []
     var codeLines: [String]?
 
@@ -66,7 +77,7 @@ struct ReadmeView: View {
       guard !paragraphLines.isEmpty else { return }
       let text = paragraphLines.joined(separator: " ").trimmingCharacters(in: .whitespaces)
       if !text.isEmpty {
-        blocks.append(.paragraph(text))
+        contents.append(.paragraph(text))
       }
       paragraphLines.removeAll()
     }
@@ -76,7 +87,7 @@ struct ReadmeView: View {
 
       if line.hasPrefix("```") {
         if let lines = codeLines {
-          blocks.append(.codeBlock(lines.joined(separator: "\n")))
+          contents.append(.codeBlock(lines.joined(separator: "\n")))
           codeLines = nil
         } else {
           flushParagraph()
@@ -101,7 +112,7 @@ struct ReadmeView: View {
       {
         flushParagraph()
         let text = line.dropFirst(headingLevel).trimmingCharacters(in: .whitespaces)
-        blocks.append(.heading(level: headingLevel, text: text))
+        contents.append(.heading(level: headingLevel, text: text))
         continue
       }
 
@@ -109,9 +120,9 @@ struct ReadmeView: View {
     }
     flushParagraph()
     if let lines = codeLines, !lines.isEmpty {
-      blocks.append(.codeBlock(lines.joined(separator: "\n")))
+      contents.append(.codeBlock(lines.joined(separator: "\n")))
     }
-    return blocks
+    return contents.enumerated().map { Block(id: $0.offset, content: $0.element) }
   }
 }
 

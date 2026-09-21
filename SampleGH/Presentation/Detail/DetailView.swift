@@ -8,8 +8,14 @@ import SwiftUI
 struct DetailView: View {
   @State private var viewModel: DetailViewModel
 
-  init(repository: Repository) {
-    _viewModel = State(wrappedValue: DetailViewModel(repository: repository))
+  init(
+    repository: Repository,
+    gitHubService: GitHubServiceProtocol = GitHubService(),
+    favoritesStorage: FavoritesStorageProtocol = LocalFavoritesDataSource()
+  ) {
+    _viewModel = State(
+      wrappedValue: DetailViewModel(
+        repository: repository, gitHubService: gitHubService, favoritesStorage: favoritesStorage))
   }
 
   var body: some View {
@@ -105,24 +111,22 @@ struct DetailView: View {
   }
 }
 
-#Preview {
-  NavigationStack {
-    DetailView(
-      repository: Repository(
-        id: 1,
-        name: "swift",
-        fullName: "apple/swift",
-        owner: Owner(id: 1, login: "apple", avatarURL: nil),
-        description: "The Swift Programming Language",
-        language: "Swift",
-        stargazersCount: 12345,
-        forksCount: 678,
-        openIssuesCount: 42,
-        htmlURL: nil,
-        createdAt: Date(timeIntervalSince1970: 0),
-        updatedAt: Date(),
-        license: License(name: "Apache License 2.0")
-      )
-    )
+#if DEBUG
+  #Preview {
+    NavigationStack {
+      DetailView(
+        repository: .preview,
+        gitHubService: PreviewGitHubService(),
+        favoritesStorage: PreviewFavoritesStorage())
+    }
   }
-}
+
+  #Preview("README Error") {
+    NavigationStack {
+      DetailView(
+        repository: .preview,
+        gitHubService: PreviewGitHubService(error: .invalidResponse),
+        favoritesStorage: PreviewFavoritesStorage())
+    }
+  }
+#endif
