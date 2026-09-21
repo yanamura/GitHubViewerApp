@@ -96,6 +96,36 @@ final class GitHubService: GitHubServiceProtocol {
     return markdown
   }
 
+  func fetchUserProfile(login: String) async throws -> UserProfile {
+    let url =
+      baseURL
+      .appendingPathComponent("users")
+      .appendingPathComponent(login)
+
+    let request = await makeRequest(url: url, accept: "application/vnd.github+json")
+
+    let (data, response) = try await apiClient.data(for: request)
+
+    guard let httpResponse = response as? HTTPURLResponse else {
+      throw GitHubServiceError.invalidResponse
+    }
+
+    switch httpResponse.statusCode {
+    case 200:
+      break
+    case 403:
+      throw GitHubServiceError.rateLimitExceeded
+    default:
+      throw GitHubServiceError.invalidResponse
+    }
+
+    do {
+      return try decoder.decode(UserProfile.self, from: data)
+    } catch {
+      throw GitHubServiceError.decodingFailed
+    }
+  }
+
   func validateToken(_ token: String) async throws {
     let url = baseURL.appendingPathComponent("user")
     let request = await makeRequest(url: url, accept: "application/vnd.github+json", token: token)

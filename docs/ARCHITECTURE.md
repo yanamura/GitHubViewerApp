@@ -19,11 +19,12 @@ SampleGH/
 │   ├── Network/        # URLSession, APIClient
 │   └── Storage/        # KeychainManager, LocalFavoritesDataSource
 └── Presentation/       # UI層 (SwiftUI, ViewModel)
-    ├── Common/         # 画面横断で利用する共通UI部品 (AsyncAvatarView, ErrorView など)
+    ├── Common/         # 画面横断で利用する共通UI部品 (AsyncAvatarView, ProfileAvatarButton, ErrorView など)
     ├── Explore/        # ExploreView, ExploreViewModel, ExploreRow
     ├── Search/         # SearchView, SearchViewModel, SearchRow
     ├── Detail/         # DetailView, DetailViewModel, ReadmeView
     ├── Favorites/      # FavoritesView, FavoritesViewModel
+    ├── Profile/        # UserProfileView, UserProfileViewModel (アバタータップで開くハーフモーダル)
     └── Settings/       # SettingsView, SettingsViewModel
 SampleGHTests/
 ├── Common/             # テストで共通で使うヘルパーなど
@@ -33,6 +34,8 @@ SampleGHTests/
 ├── Data/               
 │   ├── Network/        
 │   └── Storage/ 
+└── Presentation/
+    └── Profile/        # UserProfileViewModelTests
 ```
 
 ---

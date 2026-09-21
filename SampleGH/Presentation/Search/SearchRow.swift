@@ -10,7 +10,7 @@ struct SearchRow: View {
 
   var body: some View {
     HStack(alignment: .top, spacing: 12) {
-      AsyncAvatarView(url: repository.owner.avatarURL)
+      ProfileAvatarButton(owner: repository.owner)
 
       VStack(alignment: .leading, spacing: 4) {
         Text(repository.fullName)

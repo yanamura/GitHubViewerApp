@@ -41,7 +41,7 @@ struct DetailView: View {
 
   private var header: some View {
     HStack(alignment: .top, spacing: 12) {
-      AsyncAvatarView(url: viewModel.repository.owner.avatarURL, size: 56)
+      ProfileAvatarButton(owner: viewModel.repository.owner, size: 56)
 
       VStack(alignment: .leading, spacing: 4) {
         Text(viewModel.repository.fullName)
