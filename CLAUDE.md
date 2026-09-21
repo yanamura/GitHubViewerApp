@@ -5,8 +5,7 @@
 - Data Mapping: DTOは作らず、`Domain/Model`のEntityに直接`Decodable`を準拠させて`CodingKeys`でマッピング
 
 ## Testing Policy
-- Data, Domainに新規または変更を行った場合は、対応するテストを作成、更新すること
-- テスト作成・修正後は `swift test` または `xcodebuild test` を実行し、すべてのテストがPassすることを確認すること。
+- Data/Domainの新規・変更時はテストを作成・更新し、全テストPassを確認すること（実行・実装の詳細は `swift-testing` スキル参照）。
 
 ## References
 - 仕様・詳細設計が必要な場合のみ参照: `docs/spec.md`, `docs/ARCHITECTURE.md`
