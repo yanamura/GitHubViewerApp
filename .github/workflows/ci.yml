@@ -41,6 +41,8 @@ jobs:
           fi
           echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
 
+      # KeychainManagerTests が実Keychainを使うため、シミュレータ既定のad-hoc署名(entitlementが付与される)でビルドする。
+      # CODE_SIGNING_ALLOWED=NO を付けるとKeychainアクセスが失敗する。
       - name: Build
         run: |
           set -o pipefail
@@ -48,8 +50,7 @@ jobs:
             -project SampleGH.xcodeproj \
             -scheme SampleGH \
             -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
-            -derivedDataPath DerivedData \
-            CODE_SIGNING_ALLOWED=NO
+            -derivedDataPath DerivedData
 
       - name: Test
         run: |
@@ -59,8 +60,7 @@ jobs:
             -scheme SampleGH \
             -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
             -derivedDataPath DerivedData \
-            -resultBundlePath TestResults.xcresult \
-            CODE_SIGNING_ALLOWED=NO
+            -resultBundlePath TestResults.xcresult
 
       - name: Upload test results
         if: failure()
