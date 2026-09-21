@@ -136,6 +136,84 @@ struct GitHubServiceTests {
     }
   }
 
+  // MARK: - fetchUserProfile
+
+  @Test func fetchUserProfileReturnsMappedProfileOnSuccess() async throws {
+    let json = """
+      {
+          "id": 583231,
+          "login": "octocat",
+          "avatar_url": "https://example.com/avatar.png",
+          "name": "The Octocat",
+          "bio": "Hello, world!"
+      }
+      """.data(using: .utf8)!
+    let apiClient = MockAPIClient(result: .success((json, Self.response(statusCode: 200))))
+    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+
+    let profile = try await sut.fetchUserProfile(login: "octocat")
+
+    #expect(profile.id == 583231)
+    #expect(profile.login == "octocat")
+    #expect(profile.name == "The Octocat")
+    #expect(profile.bio == "Hello, world!")
+  }
+
+  @Test func fetchUserProfileRequestsUsersLoginEndpoint() async throws {
+    let json = #"{ "id": 1, "login": "octocat" }"#.data(using: .utf8)!
+    let apiClient = RecordingAPIClient(data: json)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
+
+    _ = try await sut.fetchUserProfile(login: "octocat")
+
+    let request = try #require(await apiClient.requests.first)
+    #expect(request.url?.path == "/users/octocat")
+    #expect(request.httpMethod == "GET")
+    #expect(request.value(forHTTPHeaderField: "Accept") == "application/vnd.github+json")
+  }
+
+  @Test func fetchUserProfileIncludesBearerTokenWhenTokenIsSaved() async throws {
+    let json = #"{ "id": 1, "login": "octocat" }"#.data(using: .utf8)!
+    let apiClient = RecordingAPIClient(data: json)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(token: "ghp_saved"),
+      baseURL: Self.baseURL)
+
+    _ = try await sut.fetchUserProfile(login: "octocat")
+
+    let request = try #require(await apiClient.requests.first)
+    #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer ghp_saved")
+  }
+
+  @Test func fetchUserProfileThrowsRateLimitExceededOn403() async throws {
+    let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 403))))
+    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+
+    await #expect(throws: GitHubServiceError.rateLimitExceeded) {
+      try await sut.fetchUserProfile(login: "octocat")
+    }
+  }
+
+  @Test func fetchUserProfileThrowsInvalidResponseOn404() async throws {
+    let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 404))))
+    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+
+    await #expect(throws: GitHubServiceError.invalidResponse) {
+      try await sut.fetchUserProfile(login: "octocat")
+    }
+  }
+
+  @Test func fetchUserProfileThrowsDecodingFailedOnMalformedJSON() async throws {
+    let malformedData = "not json".data(using: .utf8)!
+    let apiClient = MockAPIClient(result: .success((malformedData, Self.response(statusCode: 200))))
+    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+
+    await #expect(throws: GitHubServiceError.decodingFailed) {
+      try await sut.fetchUserProfile(login: "octocat")
+    }
+  }
+
   // MARK: - Authorization header
 
   @Test func requestIncludesBearerTokenWhenTokenIsSaved() async throws {

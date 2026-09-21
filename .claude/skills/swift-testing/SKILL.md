@@ -54,12 +54,6 @@ xcodebuild test-without-building \
   -derivedDataPath DerivedData
 ```
 
-> [!NOTE]
-> シミュレータ名（`iPhone 17`）は `.github/workflows/ci.yml` の `SIMULATOR_DESTINATION` と揃えています。変更する場合は本ファイルと CI の両方を更新してください。
->
-> `KeychainManagerTests` など実 Keychain を利用するテストがあるため、シミュレータ既定の ad-hoc 署名が必要です。`CODE_SIGNING_ALLOWED=NO` を指定すると Keychain アクセスが失敗します。
-
 ## 3. モック / スタブの作成方針
 - 複数のテストファイルで共有するモック（例: `MockTokenStorage`）は、`SampleGHTests/Common/` 配下に作成します。
 - 1つのテストファイルでしか使わないモックは、そのテストファイル内に `private` で定義します（例: `GitHubServiceTests.swift` 内の `RecordingAPIClient`）。他のファイルからも使う必要が出たら `Common/` へ移動してください。
-- 非同期呼び出しや呼び出し履歴の検証には、リクエストを記録する Actor やスレッドセーフなオブジェクトを活用します。
