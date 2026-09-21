@@ -19,6 +19,9 @@ struct ContentView: View {
       Tab("Favorites", systemImage: "star") {
         FavoritesView()
       }
+      Tab("Settings", systemImage: "gearshape") {
+        SettingsView()
+      }
     }
   }
 }

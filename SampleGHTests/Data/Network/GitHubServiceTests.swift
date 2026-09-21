@@ -18,6 +18,24 @@ struct GitHubServiceTests {
     }
   }
 
+  private actor RecordingAPIClient: APIClientProtocol {
+    private(set) var requests: [URLRequest] = []
+    private let statusCode: Int
+    private let data: Data
+
+    init(statusCode: Int = 200, data: Data = Data()) {
+      self.statusCode = statusCode
+      self.data = data
+    }
+
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+      requests.append(request)
+      let response = HTTPURLResponse(
+        url: request.url!, statusCode: statusCode, httpVersion: nil, headerFields: nil)!
+      return (data, response)
+    }
+  }
+
   private static let baseURL = URL(string: "https://api.github.com")!
 
   private static func response(statusCode: Int) -> URLResponse {
@@ -115,6 +133,76 @@ struct GitHubServiceTests {
 
     await #expect(throws: GitHubServiceError.invalidResponse) {
       try await sut.fetchReadme(owner: "owner", repo: "Repo")
+    }
+  }
+
+  // MARK: - Authorization header
+
+  @Test func requestIncludesBearerTokenWhenTokenIsSaved() async throws {
+    let apiClient = RecordingAPIClient(data: "# Title".data(using: .utf8)!)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(token: "ghp_saved"),
+      baseURL: Self.baseURL)
+
+    _ = try await sut.fetchReadme(owner: "owner", repo: "Repo")
+
+    let request = try #require(await apiClient.requests.first)
+    #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer ghp_saved")
+  }
+
+  @Test func requestOmitsAuthorizationHeaderWhenNoTokenIsSaved() async throws {
+    let apiClient = RecordingAPIClient(data: "# Title".data(using: .utf8)!)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
+
+    _ = try await sut.fetchReadme(owner: "owner", repo: "Repo")
+
+    let request = try #require(await apiClient.requests.first)
+    #expect(request.value(forHTTPHeaderField: "Authorization") == nil)
+  }
+
+  // MARK: - validateToken
+
+  @Test func validateTokenSendsGivenTokenToUserEndpoint() async throws {
+    let apiClient = RecordingAPIClient()
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(token: "ghp_saved"),
+      baseURL: Self.baseURL)
+
+    try await sut.validateToken("ghp_input")
+
+    let request = try #require(await apiClient.requests.first)
+    #expect(request.url?.path == "/user")
+    #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer ghp_input")
+  }
+
+  @Test func validateTokenThrowsUnauthorizedOn401() async throws {
+    let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 401))))
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
+
+    await #expect(throws: GitHubServiceError.unauthorized) {
+      try await sut.validateToken("bad")
+    }
+  }
+
+  @Test func validateTokenThrowsRateLimitExceededOn403() async throws {
+    let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 403))))
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
+
+    await #expect(throws: GitHubServiceError.rateLimitExceeded) {
+      try await sut.validateToken("token")
+    }
+  }
+
+  @Test func validateTokenThrowsInvalidResponseOnUnexpectedStatusCode() async throws {
+    let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 500))))
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
+
+    await #expect(throws: GitHubServiceError.invalidResponse) {
+      try await sut.validateToken("token")
     }
   }
 }

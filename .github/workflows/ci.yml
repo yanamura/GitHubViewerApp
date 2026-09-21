@@ -13,6 +13,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  SIMULATOR_DESTINATION: platform=iOS Simulator,name=iPhone 17
+
 jobs:
   build-and-test:
     name: Build & Test
@@ -30,26 +33,16 @@ jobs:
           sudo xcode-select -s "$XCODE_APP"
           xcodebuild -version
 
-      # シミュレータ名はランナーイメージによって異なるため、利用可能なiPhoneを動的に選ぶ
-      - name: Select simulator
-        run: |
-          UDID=$(xcrun simctl list devices available --json \
-            | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0].udid')
-          if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
-            echo "No available iPhone simulator" >&2
-            exit 1
-          fi
-          echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
-
+      # KeychainManagerTests が実Keychainを使うため、シミュレータ既定のad-hoc署名(entitlementが付与される)でビルドする。
+      # CODE_SIGNING_ALLOWED=NO を付けるとKeychainアクセスが失敗する。
       - name: Build
         run: |
           set -o pipefail
           xcodebuild build-for-testing \
             -project SampleGH.xcodeproj \
             -scheme SampleGH \
-            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
-            -derivedDataPath DerivedData \
-            CODE_SIGNING_ALLOWED=NO
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath DerivedData
 
       - name: Test
         run: |
@@ -57,10 +50,9 @@ jobs:
           xcodebuild test-without-building \
             -project SampleGH.xcodeproj \
             -scheme SampleGH \
-            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            -destination "$SIMULATOR_DESTINATION" \
             -derivedDataPath DerivedData \
-            -resultBundlePath TestResults.xcresult \
-            CODE_SIGNING_ALLOWED=NO
+            -resultBundlePath TestResults.xcresult
 
       - name: Upload test results
         if: failure()
