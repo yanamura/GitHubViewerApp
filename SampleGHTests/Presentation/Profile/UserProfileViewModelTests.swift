@@ -11,10 +11,10 @@ import Testing
 @MainActor
 struct UserProfileViewModelTests {
   private actor MockGitHubService: GitHubServiceProtocol {
-    private var userProfileResults: [Result<UserProfile, Error>]
+    private var userProfileResults: [Result<UserProfile, any Error>]
     private(set) var fetchedLogins: [String] = []
 
-    init(userProfileResults: [Result<UserProfile, Error>]) {
+    init(userProfileResults: [Result<UserProfile, any Error>]) {
       self.userProfileResults = userProfileResults
     }
 

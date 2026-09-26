@@ -17,9 +17,9 @@ final class UserProfileViewModel {
   let owner: Owner
   private(set) var state: State = .loading
 
-  private let gitHubService: GitHubServiceProtocol
+  private let gitHubService: any GitHubServiceProtocol
 
-  init(owner: Owner, gitHubService: GitHubServiceProtocol = GitHubService()) {
+  init(owner: Owner, gitHubService: any GitHubServiceProtocol = GitHubService()) {
     self.owner = owner
     self.gitHubService = gitHubService
   }
@@ -43,7 +43,7 @@ final class UserProfileViewModel {
     }
   }
 
-  private static func errorMessage(for error: Error) -> String {
+  private static func errorMessage(for error: any Error) -> String {
     switch error as? GitHubServiceError {
     case .rateLimitExceeded:
       return "APIのレート制限に達しました。しばらくしてから再度お試しください。"

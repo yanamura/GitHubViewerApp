@@ -18,13 +18,13 @@ final class DetailViewModel {
   private(set) var readmeState: ReadmeState = .loading
   private(set) var isFavorite = false
 
-  private let gitHubService: GitHubServiceProtocol
-  private let favoritesStorage: FavoritesStorageProtocol
+  private let gitHubService: any GitHubServiceProtocol
+  private let favoritesStorage: any FavoritesStorageProtocol
 
   init(
     repository: Repository,
-    gitHubService: GitHubServiceProtocol = GitHubService(),
-    favoritesStorage: FavoritesStorageProtocol = LocalFavoritesDataSource()
+    gitHubService: any GitHubServiceProtocol = GitHubService(),
+    favoritesStorage: any FavoritesStorageProtocol = LocalFavoritesDataSource()
   ) {
     self.repository = repository
     self.gitHubService = gitHubService

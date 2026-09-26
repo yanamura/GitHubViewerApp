@@ -18,12 +18,12 @@ final class SettingsViewModel {
   private(set) var isSaving = false
   private(set) var status: Status?
 
-  private let tokenStorage: TokenStorageProtocol
-  private let gitHubService: GitHubServiceProtocol
+  private let tokenStorage: any TokenStorageProtocol
+  private let gitHubService: any GitHubServiceProtocol
 
   init(
-    tokenStorage: TokenStorageProtocol = KeychainManager(),
-    gitHubService: GitHubServiceProtocol = GitHubService()
+    tokenStorage: any TokenStorageProtocol = KeychainManager(),
+    gitHubService: any GitHubServiceProtocol = GitHubService()
   ) {
     self.tokenStorage = tokenStorage
     self.gitHubService = gitHubService
@@ -84,7 +84,7 @@ final class SettingsViewModel {
     tokenInput.trimmingCharacters(in: .whitespacesAndNewlines)
   }
 
-  private static func errorMessage(for error: Error) -> String {
+  private static func errorMessage(for error: any Error) -> String {
     switch error as? GitHubServiceError {
     case .unauthorized:
       return "トークンが無効です。入力内容を確認してください。"

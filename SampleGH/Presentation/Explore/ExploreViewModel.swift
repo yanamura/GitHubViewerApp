@@ -33,10 +33,10 @@ final class ExploreViewModel {
   private(set) var repositories: [Repository] = []
   private(set) var phase: Phase = .loading
 
-  private let gitHubService: GitHubServiceProtocol
+  private let gitHubService: any GitHubServiceProtocol
   private let calendar: Calendar
 
-  init(gitHubService: GitHubServiceProtocol = GitHubService(), calendar: Calendar = .current) {
+  init(gitHubService: any GitHubServiceProtocol = GitHubService(), calendar: Calendar = .current) {
     self.gitHubService = gitHubService
     self.calendar = calendar
   }
@@ -83,7 +83,7 @@ final class ExploreViewModel {
     return formatter.string(from: date)
   }
 
-  private static func errorMessage(for error: Error) -> String {
+  private static func errorMessage(for error: any Error) -> String {
     switch error as? GitHubServiceError {
     case .rateLimitExceeded:
       return "APIのレート制限に達しました。しばらくしてから再度お試しください。"

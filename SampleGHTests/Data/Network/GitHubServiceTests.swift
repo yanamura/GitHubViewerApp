@@ -11,7 +11,7 @@ import Testing
 @MainActor
 struct GitHubServiceTests {
   private struct MockAPIClient: APIClientProtocol {
-    let result: Result<(Data, URLResponse), Error>
+    let result: Result<(Data, URLResponse), any Error>
 
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
       try result.get()

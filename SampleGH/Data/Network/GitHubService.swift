@@ -6,14 +6,14 @@
 import Foundation
 
 final class GitHubService: GitHubServiceProtocol {
-  private let apiClient: APIClientProtocol
-  private let tokenStorage: TokenStorageProtocol
+  private let apiClient: any APIClientProtocol
+  private let tokenStorage: any TokenStorageProtocol
   private let baseURL: URL
   private let decoder: JSONDecoder
 
   init(
-    apiClient: APIClientProtocol = URLSessionAPIClient(),
-    tokenStorage: TokenStorageProtocol = KeychainManager(),
+    apiClient: any APIClientProtocol = URLSessionAPIClient(),
+    tokenStorage: any TokenStorageProtocol = KeychainManager(),
     baseURL: URL = URL(string: "https://api.github.com")!
   ) {
     self.apiClient = apiClient

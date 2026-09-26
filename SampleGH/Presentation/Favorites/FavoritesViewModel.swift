@@ -10,9 +10,9 @@ import Foundation
 final class FavoritesViewModel {
   private(set) var repositories: [Repository] = []
 
-  private let favoritesStorage: FavoritesStorageProtocol
+  private let favoritesStorage: any FavoritesStorageProtocol
 
-  init(favoritesStorage: FavoritesStorageProtocol = LocalFavoritesDataSource()) {
+  init(favoritesStorage: any FavoritesStorageProtocol = LocalFavoritesDataSource()) {
     self.favoritesStorage = favoritesStorage
   }
 
