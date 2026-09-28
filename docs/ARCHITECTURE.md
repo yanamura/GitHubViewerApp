@@ -45,3 +45,13 @@ SampleGHTests/
 - APIレスポンス用のDTOは作らない。`Domain/Model` のEntity（`Repository`, `Owner` など）が直接 `Decodable` に準拠し、`CodingKeys` でAPIのsnake_caseキーをマッピングする。
 - 理由: DTOとEntityのフィールドがほぼ同一になるケースが多く、DTO→Entityの変換コードは重複・保守コストになるだけで得られる価値が小さいため。
 - Entityのプロパティ名や型がAPIレスポンスと大きく異なる、または複数の外部APIから同一Entityを組み立てる必要が生じた場合は、その時点でDTOの導入を検討する。
+
+---
+
+## 4. 依存性注入 (Dependency Injection)
+
+- [swift-dependencies](https://github.com/pointfreeco/swift-dependencies) を使用する。依存の登録は `App/Dependencies.swift` に集約し、`DependencyValues` にプロトコル型 (`any XxxProtocol`) のプロパティとして定義する。
+- ViewModelは `@ObservationIgnored @Dependency(\.xxx) private var xxx` で依存を取得する。initで依存を受け取らない。
+- Data層の実装（`GitHubService` など）はイニシャライザ注入とし、`liveValue` の中で組み立てる。
+- `liveValue` はswift-dependenciesによりキャッシュされ、アプリ全体で同一インスタンスが共有される。状態を持つ実装（トークンをキャッシュする `KeychainManager` など）もシングルトンにせず、この仕組みで共有する。
+- テストでは `withDependencies { $0.xxx = mock } operation: { XxxViewModel() }` の中でViewModelを生成して依存を差し替える。上書きしていない依存にアクセスするとテスト失敗として報告される。

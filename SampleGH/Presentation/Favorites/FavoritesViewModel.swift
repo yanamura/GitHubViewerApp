@@ -3,6 +3,7 @@
 //  SampleGH
 //
 
+import Dependencies
 import Foundation
 
 @MainActor
@@ -10,11 +11,7 @@ import Foundation
 final class FavoritesViewModel {
   private(set) var repositories: [Repository] = []
 
-  private let favoritesStorage: any FavoritesStorageProtocol
-
-  init(favoritesStorage: any FavoritesStorageProtocol = LocalFavoritesDataSource()) {
-    self.favoritesStorage = favoritesStorage
-  }
+  @ObservationIgnored @Dependency(\.favoritesStorage) private var favoritesStorage
 
   func onAppear() async {
     await reload()

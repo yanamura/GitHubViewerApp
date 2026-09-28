@@ -3,6 +3,7 @@
 //  SampleGH
 //
 
+import Dependencies
 import Foundation
 
 @MainActor
@@ -18,17 +19,11 @@ final class DetailViewModel {
   private(set) var readmeState: ReadmeState = .loading
   private(set) var isFavorite = false
 
-  private let gitHubService: any GitHubServiceProtocol
-  private let favoritesStorage: any FavoritesStorageProtocol
+  @ObservationIgnored @Dependency(\.gitHubService) private var gitHubService
+  @ObservationIgnored @Dependency(\.favoritesStorage) private var favoritesStorage
 
-  init(
-    repository: Repository,
-    gitHubService: any GitHubServiceProtocol = GitHubService(),
-    favoritesStorage: any FavoritesStorageProtocol = LocalFavoritesDataSource()
-  ) {
+  init(repository: Repository) {
     self.repository = repository
-    self.gitHubService = gitHubService
-    self.favoritesStorage = favoritesStorage
   }
 
   func onAppear() async {

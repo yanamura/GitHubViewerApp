@@ -3,6 +3,7 @@
 //  SampleGH
 //
 
+import Dependencies
 import Foundation
 
 @MainActor
@@ -17,11 +18,10 @@ final class UserProfileViewModel {
   let owner: Owner
   private(set) var state: State = .loading
 
-  private let gitHubService: any GitHubServiceProtocol
+  @ObservationIgnored @Dependency(\.gitHubService) private var gitHubService
 
-  init(owner: Owner, gitHubService: any GitHubServiceProtocol = GitHubService()) {
+  init(owner: Owner) {
     self.owner = owner
-    self.gitHubService = gitHubService
   }
 
   func onAppear() async {

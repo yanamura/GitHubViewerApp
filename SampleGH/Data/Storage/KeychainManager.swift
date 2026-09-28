@@ -10,9 +10,13 @@ struct KeychainError: Error, Equatable, Sendable {
   let status: OSStatus
 }
 
+/// Keychainへのアクセスを抑えるため、読み込んだトークンをメモリにキャッシュする。
+/// キャッシュを共有できるよう、アプリでは`DependencyValues.tokenStorage`経由で単一インスタンスを使う。
 actor KeychainManager: TokenStorageProtocol {
   private let service: String
   private let account: String
+  private var isCacheLoaded = false
+  private var cachedToken: String?
 
   init(service: String = "com.samplegh.github", account: String = "personal-access-token") {
     self.service = service
@@ -20,6 +24,28 @@ actor KeychainManager: TokenStorageProtocol {
   }
 
   func loadToken() async -> String? {
+    if isCacheLoaded { return cachedToken }
+    cachedToken = readTokenFromKeychain()
+    isCacheLoaded = true
+    return cachedToken
+  }
+
+  func saveToken(_ token: String) async throws {
+    try writeTokenToKeychain(token)
+    cachedToken = token
+    isCacheLoaded = true
+  }
+
+  func deleteToken() async throws {
+    let status = SecItemDelete(baseQuery as CFDictionary)
+    guard status == errSecSuccess || status == errSecItemNotFound else {
+      throw KeychainError(status: status)
+    }
+    cachedToken = nil
+    isCacheLoaded = true
+  }
+
+  private func readTokenFromKeychain() -> String? {
     var query = baseQuery
     query[kSecReturnData as String] = true
     query[kSecMatchLimit as String] = kSecMatchLimitOne
@@ -30,7 +56,7 @@ actor KeychainManager: TokenStorageProtocol {
     return String(data: data, encoding: .utf8)
   }
 
-  func saveToken(_ token: String) async throws {
+  private func writeTokenToKeychain(_ token: String) throws {
     let data = Data(token.utf8)
     let attributes: [String: Any] = [kSecValueData as String: data]
 
@@ -46,13 +72,6 @@ actor KeychainManager: TokenStorageProtocol {
       guard addStatus == errSecSuccess else { throw KeychainError(status: addStatus) }
     default:
       throw KeychainError(status: updateStatus)
-    }
-  }
-
-  func deleteToken() async throws {
-    let status = SecItemDelete(baseQuery as CFDictionary)
-    guard status == errSecSuccess || status == errSecItemNotFound else {
-      throw KeychainError(status: status)
     }
   }
 

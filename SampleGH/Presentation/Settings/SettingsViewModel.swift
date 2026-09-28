@@ -3,6 +3,7 @@
 //  SampleGH
 //
 
+import Dependencies
 import Foundation
 
 @MainActor
@@ -18,16 +19,8 @@ final class SettingsViewModel {
   private(set) var isSaving = false
   private(set) var status: Status?
 
-  private let tokenStorage: any TokenStorageProtocol
-  private let gitHubService: any GitHubServiceProtocol
-
-  init(
-    tokenStorage: any TokenStorageProtocol = KeychainManager(),
-    gitHubService: any GitHubServiceProtocol = GitHubService()
-  ) {
-    self.tokenStorage = tokenStorage
-    self.gitHubService = gitHubService
-  }
+  @ObservationIgnored @Dependency(\.tokenStorage) private var tokenStorage
+  @ObservationIgnored @Dependency(\.gitHubService) private var gitHubService
 
   var canSave: Bool {
     !isSaving && !trimmedToken.isEmpty

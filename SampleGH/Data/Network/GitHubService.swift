@@ -13,7 +13,7 @@ final class GitHubService: GitHubServiceProtocol {
 
   init(
     apiClient: any APIClientProtocol = URLSessionAPIClient(),
-    tokenStorage: any TokenStorageProtocol = KeychainManager(),
+    tokenStorage: any TokenStorageProtocol,
     baseURL: URL = URL(string: "https://api.github.com")!
   ) {
     self.apiClient = apiClient
@@ -148,7 +148,7 @@ final class GitHubService: GitHubServiceProtocol {
     }
   }
 
-  /// `token` を省略した場合はKeychainに保存済みのPATを使う。未保存なら未認証リクエストになる。
+  /// `token` を省略した場合は保存済みのPATを使う（2回目以降はメモリキャッシュから取得）。未保存なら未認証リクエストになる。
   private func makeRequest(url: URL, accept: String, token: String? = nil) async -> URLRequest {
     var request = URLRequest(url: url)
     request.httpMethod = "GET"

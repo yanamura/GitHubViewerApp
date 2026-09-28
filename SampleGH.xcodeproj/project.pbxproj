@@ -11,6 +11,7 @@
 		808E086E3060167C00ABE13A /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 808E08683060167C00ABE13A /* CLAUDE.md */; };
 		808E086F3060167C00ABE13A /* spec.md in Resources */ = {isa = PBXBuildFile; fileRef = 808E086A3060167C00ABE13A /* spec.md */; };
 		808E08703060167C00ABE13A /* ARCHITECTURE.md in Resources */ = {isa = PBXBuildFile; fileRef = 808E08693060167C00ABE13A /* ARCHITECTURE.md */; };
+		80A1CD93306AB85F00505FB7 /* Dependencies in Frameworks */ = {isa = PBXBuildFile; productRef = 80A1CD92306AB85F00505FB7 /* Dependencies */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				80A1CD93306AB85F00505FB7 /* Dependencies in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -113,6 +115,7 @@
 			);
 			name = SampleGH;
 			packageProductDependencies = (
+				80A1CD92306AB85F00505FB7 /* Dependencies */,
 			);
 			productName = SampleGH;
 			productReference = 800F57163022208F00A1D4EF /* SampleGH.app */;
@@ -169,6 +172,9 @@
 			);
 			mainGroup = 800F570D3022208F00A1D4EF;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				80A1CD91306AB85F00505FB7 /* XCRemoteSwiftPackageReference "swift-dependencies" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 800F57173022208F00A1D4EF /* Products */;
 			projectDirPath = "";
@@ -506,6 +512,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		80A1CD91306AB85F00505FB7 /* XCRemoteSwiftPackageReference "swift-dependencies" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-dependencies";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.17.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		80A1CD92306AB85F00505FB7 /* Dependencies */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 80A1CD91306AB85F00505FB7 /* XCRemoteSwiftPackageReference "swift-dependencies" */;
+			productName = Dependencies;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 800F570E3022208F00A1D4EF /* Project object */;
 }

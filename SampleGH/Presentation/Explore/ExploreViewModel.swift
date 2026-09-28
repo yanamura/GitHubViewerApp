@@ -3,6 +3,7 @@
 //  SampleGH
 //
 
+import Dependencies
 import Foundation
 
 enum ExploreLanguageFilter: String, CaseIterable, Identifiable, Hashable, Sendable {
@@ -33,11 +34,10 @@ final class ExploreViewModel {
   private(set) var repositories: [Repository] = []
   private(set) var phase: Phase = .loading
 
-  private let gitHubService: any GitHubServiceProtocol
+  @ObservationIgnored @Dependency(\.gitHubService) private var gitHubService
   private let calendar: Calendar
 
-  init(gitHubService: any GitHubServiceProtocol = GitHubService(), calendar: Calendar = .current) {
-    self.gitHubService = gitHubService
+  init(calendar: Calendar = .current) {
     self.calendar = calendar
   }
 
