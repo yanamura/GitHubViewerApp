@@ -3,6 +3,7 @@
 //  SampleGH
 //
 
+import Dependencies
 import Foundation
 
 @MainActor
@@ -20,14 +21,10 @@ final class SearchViewModel {
   private(set) var phase: Phase = .idle
   private(set) var isLoadingNextPage = false
 
-  private let gitHubService: GitHubServiceProtocol
+  @ObservationIgnored @Dependency(\.gitHubService) private var gitHubService
   private var searchedQuery = ""
   private var currentPage = 1
   private var hasMorePages = true
-
-  init(gitHubService: GitHubServiceProtocol = GitHubService()) {
-    self.gitHubService = gitHubService
-  }
 
   /// デバウンス用。`.task(id: query)` から呼ばれ、queryが変わると自動的にキャンセルされる。
   func onQueryChanged() async {
@@ -95,7 +92,7 @@ final class SearchViewModel {
     }
   }
 
-  private static func errorMessage(for error: Error) -> String {
+  private static func errorMessage(for error: any Error) -> String {
     switch error as? GitHubServiceError {
     case .rateLimitExceeded:
       return "APIのレート制限に達しました。しばらくしてから再度お試しください。"

@@ -6,14 +6,14 @@
 import Foundation
 
 final class GitHubService: GitHubServiceProtocol {
-  private let apiClient: APIClientProtocol
-  private let tokenStorage: TokenStorageProtocol
+  private let apiClient: any APIClientProtocol
+  private let tokenStorage: any TokenStorageProtocol
   private let baseURL: URL
   private let decoder: JSONDecoder
 
   init(
-    apiClient: APIClientProtocol = URLSessionAPIClient(),
-    tokenStorage: TokenStorageProtocol = KeychainManager(),
+    apiClient: any APIClientProtocol = URLSessionAPIClient(),
+    tokenStorage: any TokenStorageProtocol,
     baseURL: URL = URL(string: "https://api.github.com")!
   ) {
     self.apiClient = apiClient
@@ -148,7 +148,7 @@ final class GitHubService: GitHubServiceProtocol {
     }
   }
 
-  /// `token` を省略した場合はKeychainに保存済みのPATを使う。未保存なら未認証リクエストになる。
+  /// `token` を省略した場合は保存済みのPATを使う（2回目以降はメモリキャッシュから取得）。未保存なら未認証リクエストになる。
   private func makeRequest(url: URL, accept: String, token: String? = nil) async -> URLRequest {
     var request = URLRequest(url: url)
     request.httpMethod = "GET"

@@ -2,6 +2,7 @@
 - Pattern: MVVM (SwiftUI + `@Observable`)
 - Concurrency: Swift 6 Concurrency準拠 (`@MainActor` on ViewModels)
 - Layer: Presentation / Domain / Data
+- DI: swift-dependencies (`App/Dependencies.swift` に登録、ViewModelは `@Dependency` で取得)
 - Data Mapping: DTOは作らず、`Domain/Model`のEntityに直接`Decodable`を準拠させて`CodingKeys`でマッピング
 
 ## Testing Policy

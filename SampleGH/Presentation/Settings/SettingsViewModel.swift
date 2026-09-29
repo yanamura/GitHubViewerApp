@@ -3,6 +3,7 @@
 //  SampleGH
 //
 
+import Dependencies
 import Foundation
 
 @MainActor
@@ -18,16 +19,8 @@ final class SettingsViewModel {
   private(set) var isSaving = false
   private(set) var status: Status?
 
-  private let tokenStorage: TokenStorageProtocol
-  private let gitHubService: GitHubServiceProtocol
-
-  init(
-    tokenStorage: TokenStorageProtocol = KeychainManager(),
-    gitHubService: GitHubServiceProtocol = GitHubService()
-  ) {
-    self.tokenStorage = tokenStorage
-    self.gitHubService = gitHubService
-  }
+  @ObservationIgnored @Dependency(\.tokenStorage) private var tokenStorage
+  @ObservationIgnored @Dependency(\.gitHubService) private var gitHubService
 
   var canSave: Bool {
     !isSaving && !trimmedToken.isEmpty
@@ -84,7 +77,7 @@ final class SettingsViewModel {
     tokenInput.trimmingCharacters(in: .whitespacesAndNewlines)
   }
 
-  private static func errorMessage(for error: Error) -> String {
+  private static func errorMessage(for error: any Error) -> String {
     switch error as? GitHubServiceError {
     case .unauthorized:
       return "トークンが無効です。入力内容を確認してください。"

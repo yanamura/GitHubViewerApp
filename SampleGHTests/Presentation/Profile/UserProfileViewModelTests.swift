@@ -3,6 +3,7 @@
 //  SampleGHTests
 //
 
+import Dependencies
 import Foundation
 import Testing
 
@@ -11,10 +12,10 @@ import Testing
 @MainActor
 struct UserProfileViewModelTests {
   private actor MockGitHubService: GitHubServiceProtocol {
-    private var userProfileResults: [Result<UserProfile, Error>]
+    private var userProfileResults: [Result<UserProfile, any Error>]
     private(set) var fetchedLogins: [String] = []
 
-    init(userProfileResults: [Result<UserProfile, Error>]) {
+    init(userProfileResults: [Result<UserProfile, any Error>]) {
       self.userProfileResults = userProfileResults
     }
 
@@ -37,19 +38,26 @@ struct UserProfileViewModelTests {
   }
 
   private static let owner = Owner(id: 1, login: "octocat", avatarURL: nil)
+
+  private func makeSUT(service: MockGitHubService) -> UserProfileViewModel {
+    withDependencies {
+      $0.gitHubService = service
+    } operation: {
+      UserProfileViewModel(owner: Self.owner)
+    }
+  }
   private static let profile = UserProfile(
     id: 1, login: "octocat", name: "The Octocat", bio: "Hello, world!")
 
   @Test func initialStateIsLoading() {
-    let sut = UserProfileViewModel(
-      owner: Self.owner, gitHubService: MockGitHubService(userProfileResults: []))
+    let sut = makeSUT(service: MockGitHubService(userProfileResults: []))
 
     #expect(sut.state == .loading)
   }
 
   @Test func onAppearLoadsProfileForOwnerLogin() async {
     let service = MockGitHubService(userProfileResults: [.success(Self.profile)])
-    let sut = UserProfileViewModel(owner: Self.owner, gitHubService: service)
+    let sut = makeSUT(service: service)
 
     await sut.onAppear()
 
@@ -61,7 +69,7 @@ struct UserProfileViewModelTests {
     let service = MockGitHubService(userProfileResults: [
       .failure(GitHubServiceError.rateLimitExceeded)
     ])
-    let sut = UserProfileViewModel(owner: Self.owner, gitHubService: service)
+    let sut = makeSUT(service: service)
 
     await sut.onAppear()
 
@@ -72,7 +80,7 @@ struct UserProfileViewModelTests {
     let service = MockGitHubService(userProfileResults: [
       .failure(GitHubServiceError.invalidResponse)
     ])
-    let sut = UserProfileViewModel(owner: Self.owner, gitHubService: service)
+    let sut = makeSUT(service: service)
 
     await sut.onAppear()
 
@@ -84,7 +92,7 @@ struct UserProfileViewModelTests {
       .failure(GitHubServiceError.invalidResponse),
       .success(Self.profile),
     ])
-    let sut = UserProfileViewModel(owner: Self.owner, gitHubService: service)
+    let sut = makeSUT(service: service)
 
     await sut.onAppear()
     await sut.retry()

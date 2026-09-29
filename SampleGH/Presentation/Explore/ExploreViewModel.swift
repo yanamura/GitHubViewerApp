@@ -3,6 +3,7 @@
 //  SampleGH
 //
 
+import Dependencies
 import Foundation
 
 enum ExploreLanguageFilter: String, CaseIterable, Identifiable, Hashable, Sendable {
@@ -33,11 +34,10 @@ final class ExploreViewModel {
   private(set) var repositories: [Repository] = []
   private(set) var phase: Phase = .loading
 
-  private let gitHubService: GitHubServiceProtocol
+  @ObservationIgnored @Dependency(\.gitHubService) private var gitHubService
   private let calendar: Calendar
 
-  init(gitHubService: GitHubServiceProtocol = GitHubService(), calendar: Calendar = .current) {
-    self.gitHubService = gitHubService
+  init(calendar: Calendar = .current) {
     self.calendar = calendar
   }
 
@@ -83,7 +83,7 @@ final class ExploreViewModel {
     return formatter.string(from: date)
   }
 
-  private static func errorMessage(for error: Error) -> String {
+  private static func errorMessage(for error: any Error) -> String {
     switch error as? GitHubServiceError {
     case .rateLimitExceeded:
       return "APIのレート制限に達しました。しばらくしてから再度お試しください。"

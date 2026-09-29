@@ -11,7 +11,7 @@ import Testing
 @MainActor
 struct GitHubServiceTests {
   private struct MockAPIClient: APIClientProtocol {
-    let result: Result<(Data, URLResponse), Error>
+    let result: Result<(Data, URLResponse), any Error>
 
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
       try result.get()
@@ -67,7 +67,8 @@ struct GitHubServiceTests {
       }
       """.data(using: .utf8)!
     let apiClient = MockAPIClient(result: .success((json, Self.response(statusCode: 200))))
-    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
 
     let result = try await sut.searchRepositories(query: "swift", page: 1)
 
@@ -81,7 +82,8 @@ struct GitHubServiceTests {
 
   @Test func searchRepositoriesThrowsRateLimitExceededOn403() async throws {
     let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 403))))
-    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
 
     await #expect(throws: GitHubServiceError.rateLimitExceeded) {
       try await sut.searchRepositories(query: "swift", page: 1)
@@ -90,7 +92,8 @@ struct GitHubServiceTests {
 
   @Test func searchRepositoriesThrowsInvalidResponseOnUnexpectedStatusCode() async throws {
     let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 500))))
-    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
 
     await #expect(throws: GitHubServiceError.invalidResponse) {
       try await sut.searchRepositories(query: "swift", page: 1)
@@ -100,7 +103,8 @@ struct GitHubServiceTests {
   @Test func searchRepositoriesThrowsDecodingFailedOnMalformedJSON() async throws {
     let malformedData = "not json".data(using: .utf8)!
     let apiClient = MockAPIClient(result: .success((malformedData, Self.response(statusCode: 200))))
-    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
 
     await #expect(throws: GitHubServiceError.decodingFailed) {
       try await sut.searchRepositories(query: "swift", page: 1)
@@ -111,7 +115,8 @@ struct GitHubServiceTests {
     let markdown = "# Title\n\nBody text."
     let apiClient = MockAPIClient(
       result: .success((markdown.data(using: .utf8)!, Self.response(statusCode: 200))))
-    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
 
     let result = try await sut.fetchReadme(owner: "owner", repo: "Repo")
 
@@ -120,7 +125,8 @@ struct GitHubServiceTests {
 
   @Test func fetchReadmeThrowsRateLimitExceededOn403() async throws {
     let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 403))))
-    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
 
     await #expect(throws: GitHubServiceError.rateLimitExceeded) {
       try await sut.fetchReadme(owner: "owner", repo: "Repo")
@@ -129,7 +135,8 @@ struct GitHubServiceTests {
 
   @Test func fetchReadmeThrowsInvalidResponseOnUnexpectedStatusCode() async throws {
     let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 404))))
-    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
 
     await #expect(throws: GitHubServiceError.invalidResponse) {
       try await sut.fetchReadme(owner: "owner", repo: "Repo")
@@ -149,7 +156,8 @@ struct GitHubServiceTests {
       }
       """.data(using: .utf8)!
     let apiClient = MockAPIClient(result: .success((json, Self.response(statusCode: 200))))
-    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
 
     let profile = try await sut.fetchUserProfile(login: "octocat")
 
@@ -188,7 +196,8 @@ struct GitHubServiceTests {
 
   @Test func fetchUserProfileThrowsRateLimitExceededOn403() async throws {
     let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 403))))
-    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
 
     await #expect(throws: GitHubServiceError.rateLimitExceeded) {
       try await sut.fetchUserProfile(login: "octocat")
@@ -197,7 +206,8 @@ struct GitHubServiceTests {
 
   @Test func fetchUserProfileThrowsInvalidResponseOn404() async throws {
     let apiClient = MockAPIClient(result: .success((Data(), Self.response(statusCode: 404))))
-    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
 
     await #expect(throws: GitHubServiceError.invalidResponse) {
       try await sut.fetchUserProfile(login: "octocat")
@@ -207,7 +217,8 @@ struct GitHubServiceTests {
   @Test func fetchUserProfileThrowsDecodingFailedOnMalformedJSON() async throws {
     let malformedData = "not json".data(using: .utf8)!
     let apiClient = MockAPIClient(result: .success((malformedData, Self.response(statusCode: 200))))
-    let sut = GitHubService(apiClient: apiClient, baseURL: Self.baseURL)
+    let sut = GitHubService(
+      apiClient: apiClient, tokenStorage: MockTokenStorage(), baseURL: Self.baseURL)
 
     await #expect(throws: GitHubServiceError.decodingFailed) {
       try await sut.fetchUserProfile(login: "octocat")
